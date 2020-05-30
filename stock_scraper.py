@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def scrape_url(ticker):
+def scrape_url_fundamentals(ticker):
     yahooURL = 'https://finance.yahoo.com/quote/' + ticker + '/analysis?p=' + ticker
     guruURL = 'https://www.gurufocus.com/stock/' + ticker + '/summary'
     mbURL = 'https://www.marketbeat.com/stocks/' + ticker + '/'
@@ -45,4 +45,9 @@ def scrape_url(ticker):
     print(quick)
 
 
-scrape_url('MSFT')
+def main():
+    ticker = input("Input ticker: ")
+    scrape_url_fundamentals(ticker)
+
+
+main()
