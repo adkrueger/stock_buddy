@@ -30,12 +30,19 @@ def scrape_url(ticker):
     roic = [div.text[6:-1] for div in roic if 'ROIC' in div.text][0]
     # debt to equity ratio
     dte = mbSoup.find_all(class_='price-data')
+    quick = dte
+    #payout = dte
     dte = [div.text[20:] for div in dte if 'Debt-to-Equity' in div.text][0]
+    # quick ratio
+    quick = [div.text[11:] for div in quick if 'Quick' in div.text][0]
+    # payout ratio - doesn't exist?
+    #payout = [div.text[12:] for div in payout if 'Payout' in div.text][0]
 
     print(growth_last5.text)
     print(growth_next5.text)
     print(roic)
     print(dte)
+    print(quick)
 
 
 scrape_url('MSFT')
