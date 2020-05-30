@@ -1,18 +1,20 @@
-import requests
-import json
+from config import CONFIG_KEY
+import datetime as dt
+import matplotlib.pyplot as plt
+from matplotlib import style
+import pandas as pd
+import pandas_datareader.data as pdr
 
-headers = {
-    'Accept': 'application/json',
-    'Authorization': 'Bearer kaIUKPMS2ivA8n4V1iTE99CQUGcG'
-}
-url = 'https://sandbox.tradier.com/v1/markets/quotes?symbols='
+api_key = CONFIG_KEY
 
-symbol = 'spy'
-#symbol = input("Input desired symbol here:").lower()
+DATE_START = '2020-05-29'
+DATE_END = '2020-05-29'
+SYMBOL = 'MSFT'
 
-r = requests.get(url + symbol, headers=headers)
+# We use the 'av-daily' DataReader to download data from AlphaVantage
+stock = pdr.DataReader(SYMBOL, 'av-daily',
+                       start=DATE_START,
+                       end=DATE_END,
+                       api_key=api_key)
 
-result = json.loads(r.text)
-print(json.dumps(result, indent=2, sort_keys=True))
-
-quote = result['quotes']['quote']
+print(stock)
