@@ -2,10 +2,15 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def scrape_url_fundamentals(ticker):
+def check_fundamentals(ticker):
+    pass
+
+
+def scrape_url_fundamentals(ticker, market):
     yahooURL = 'https://finance.yahoo.com/quote/' + ticker + '/analysis?p=' + ticker
     guruURL = 'https://www.gurufocus.com/stock/' + ticker + '/summary'
     mbURL = 'https://www.marketbeat.com/stocks/' + ticker + '/'
+    mbDivURL = 'https://www.marketbeat.com/stocks/' + market + '/' + ticker + '/'
     try:
         yahooResp = requests.get(yahooURL)
         yahooResp.raise_for_status()
@@ -18,25 +23,37 @@ def scrape_url_fundamentals(ticker):
         print('\nPlease refresh the page and try again')
         exit()
 
+    try:
+        mbDivResp = requests.get(mbDivURL)
+        mbDivResp.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(e)
+        print('\nPlease refresh the page and try again')
+        exit()
+
     yahooSoup = BeautifulSoup(yahooResp.text, 'html.parser')
     guruSoup = BeautifulSoup(guruResp.text, 'html.parser')
     mbSoup = BeautifulSoup(mbResp.text, 'html.parser')
+    mbDivSoup = BeautifulSoup(mbDivResp.text, 'html.parser')
 
     # growth in last 5 years and next 5 years
     growth_last5 = yahooSoup.find_all('tr')[-1].find_all('td')[1]
     growth_next5 = yahooSoup.find_all('tr')[-2].find_all('td')[1]
+
     # return on invested capital
     roic = guruSoup.find_all(class_='bar-divider')
     roic = [div.text[6:-1] for div in roic if 'ROIC' in div.text][0]
+
     # debt to equity ratio
     dte = mbSoup.find_all(class_='price-data')
     quick = dte
-    #payout = dte
     dte = [div.text[20:] for div in dte if 'Debt-to-Equity' in div.text][0]
     # quick ratio
     quick = [div.text[11:] for div in quick if 'Quick' in div.text][0]
-    # payout ratio - doesn't exist?
-    #payout = [div.text[12:] for div in payout if 'Payout' in div.text][0]
+
+    # payout ratio
+    pr = mbDivSoup.find_all(class_='_col-lg-6')[0]
+    payout = [div.text[12:] for div in payout if 'Payout' in div.text][0]
 
     print(growth_last5.text)
     print(growth_next5.text)
@@ -47,7 +64,8 @@ def scrape_url_fundamentals(ticker):
 
 def main():
     ticker = input("Input ticker: ")
-    scrape_url_fundamentals(ticker)
+    market = input("Input market: ")
+    scrape_url_fundamentals(ticker, market)
 
 
 main()
