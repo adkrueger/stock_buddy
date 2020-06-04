@@ -2,30 +2,25 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def check_fundamentals(ticker):
+def check_fundamentals(ticker, growth_next5, growth_last5, roic, dte, quick, payout):
     pass
 
 
-def scrape_url_fundamentals(ticker, market):
+def scrape_url_fundamentals(ticker):
     yahooURL = 'https://finance.yahoo.com/quote/' + ticker + '/analysis?p=' + ticker
     guruURL = 'https://www.gurufocus.com/stock/' + ticker + '/summary'
-    mbURL = 'https://www.marketbeat.com/stocks/' + ticker + '/'
-    mbDivURL = 'https://www.marketbeat.com/stocks/' + market + '/' + ticker + '/'
+    fvURL = 'https://www.finviz.com/quote.ashx?t=' + ticker.lower()
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0'}
+
     try:
         yahooResp = requests.get(yahooURL)
         yahooResp.raise_for_status()
         guruResp = requests.get(guruURL)
         guruResp.raise_for_status()
-        mbResp = requests.get(mbURL)
-        mbResp.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print(e)
-        print('\nPlease refresh the page and try again')
-        exit()
-
-    try:
-        mbDivResp = requests.get(mbDivURL)
-        mbDivResp.raise_for_status()
+        fvResp = requests.get(fvURL, headers=headers)
+        fvResp.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(e)
         print('\nPlease refresh the page and try again')
@@ -33,8 +28,7 @@ def scrape_url_fundamentals(ticker, market):
 
     yahooSoup = BeautifulSoup(yahooResp.text, 'html.parser')
     guruSoup = BeautifulSoup(guruResp.text, 'html.parser')
-    mbSoup = BeautifulSoup(mbResp.text, 'html.parser')
-    mbDivSoup = BeautifulSoup(mbDivResp.text, 'html.parser')
+    fvSoup = BeautifulSoup(fvResp.text, 'html.parser')
 
     # growth in last 5 years and next 5 years
     growth_last5 = yahooSoup.find_all('tr')[-1].find_all('td')[1]
@@ -45,27 +39,30 @@ def scrape_url_fundamentals(ticker, market):
     roic = [div.text[6:-1] for div in roic if 'ROIC' in div.text][0]
 
     # debt to equity ratio
-    dte = mbSoup.find_all(class_='price-data')
+    dte = fvSoup.find_all('table')[8]
+    '''
     quick = dte
-    dte = [div.text[20:] for div in dte if 'Debt-to-Equity' in div.text][0]
+    payout = dte
     # quick ratio
     quick = [div.text[11:] for div in quick if 'Quick' in div.text][0]
 
     # payout ratio
-    pr = mbDivSoup.find_all(class_='_col-lg-6')[0]
-    payout = [div.text[12:] for div in payout if 'Payout' in div.text][0]
-
+    pr = fvSoup.find_all(class_='col-lg-6')[0]
+    print(pr.text)
+    #payout = [div.text[12:] for div in payout if 'Payout' in div.text][0]
+    '''
     print(growth_last5.text)
     print(growth_next5.text)
     print(roic)
-    print(dte)
-    print(quick)
+    # for i in dte:
+    #    print(i)
+    print(dte.text)
+    # print(quick)
 
 
 def main():
     ticker = input("Input ticker: ")
-    market = input("Input market: ")
-    scrape_url_fundamentals(ticker, market)
+    scrape_url_fundamentals(ticker)
 
 
 main()
